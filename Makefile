@@ -35,7 +35,11 @@ check:
 
 vulncheck:
 	@command -v govulncheck >/dev/null 2>&1 || go install golang.org/x/vuln/cmd/govulncheck@latest
-	govulncheck ./...
+	@if command -v govulncheck >/dev/null 2>&1; then \
+		govulncheck ./...; \
+	else \
+		"$$(go env GOPATH)/bin/govulncheck" ./...; \
+	fi
 
 new-module:
 	@test -n "$(name)" || (echo "Usage: make new-module name=user"; exit 1)
