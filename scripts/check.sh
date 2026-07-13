@@ -2,13 +2,45 @@
 
 set -euo pipefail
 
+TMP_DIR="$(mktemp -d)"
+trap 'rm -rf "$TMP_DIR"' EXIT
+
 echo "==> Checking go.mod / go.sum"
+
+cp go.mod "$TMP_DIR/go.mod.before"
+
+if [ -f go.sum ]; then
+  cp go.sum "$TMP_DIR/go.sum.before"
+else
+  touch "$TMP_DIR/go.sum.before"
+fi
+
 go mod tidy
 
-if ! git diff --exit-code -- go.mod go.sum >/dev/null; then
-  echo "go mod tidy changed go.mod or go.sum"
+cp go.mod "$TMP_DIR/go.mod.after"
+
+if [ -f go.sum ]; then
+  cp go.sum "$TMP_DIR/go.sum.after"
+else
+  touch "$TMP_DIR/go.sum.after"
+fi
+
+MOD_CHANGED=0
+
+if ! diff -u "$TMP_DIR/go.mod.before" "$TMP_DIR/go.mod.after" >/dev/null; then
+  MOD_CHANGED=1
+  echo "go.mod changed after running go mod tidy:"
+  diff -u "$TMP_DIR/go.mod.before" "$TMP_DIR/go.mod.after" || true
+fi
+
+if ! diff -u "$TMP_DIR/go.sum.before" "$TMP_DIR/go.sum.after" >/dev/null; then
+  MOD_CHANGED=1
+  echo "go.sum changed after running go mod tidy:"
+  diff -u "$TMP_DIR/go.sum.before" "$TMP_DIR/go.sum.after" || true
+fi
+
+if [ "$MOD_CHANGED" -eq 1 ]; then
   echo "Please run: go mod tidy"
-  git diff -- go.mod go.sum
   exit 1
 fi
 
