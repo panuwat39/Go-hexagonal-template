@@ -22,6 +22,6 @@ func NewModule() *Module {
 	}
 }
 
-func (m *Module) RegisterRoutes(app *fiber.App) {
-	m.handler.RegisterRoutes(app)
+func (m *Module) RegisterRoutes(router fiber.Router) {
+	userhttp.RegisterRoutes(router, m.handler)
 }
