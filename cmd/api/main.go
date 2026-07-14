@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
@@ -10,14 +9,22 @@ import (
 
 	"github.com/panuwat39/go-hexagonal-template/internal/bootstrap"
 	usermodule "github.com/panuwat39/go-hexagonal-template/internal/modules/user"
+	platformmiddleware "github.com/panuwat39/go-hexagonal-template/internal/platform/httpserver/middleware"
+	platformlogger "github.com/panuwat39/go-hexagonal-template/internal/platform/logger"
 )
 
 func main() {
 	cfg := bootstrap.LoadConfig()
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	logger := platformlogger.New(platformlogger.Config{
+		Env: cfg.App.Env,
+	})
 
 	app := fiber.New(fiber.Config{
 		AppName: cfg.App.Name,
+	})
+
+	platformmiddleware.Register(app, logger, platformmiddleware.Config{
+		AllowedOrigins: cfg.CORS.AllowedOrigins,
 	})
 
 	app.Get("/health", func(c fiber.Ctx) error {

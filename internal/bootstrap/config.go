@@ -9,6 +9,7 @@ import (
 type Config struct {
 	App  AppConfig
 	HTTP HTTPConfig
+	CORS CORSConfig
 }
 
 type AppConfig struct {
@@ -20,6 +21,10 @@ type HTTPConfig struct {
 	Port int
 }
 
+type CORSConfig struct {
+	AllowedOrigins string
+}
+
 func LoadConfig() Config {
 	return Config{
 		App: AppConfig{
@@ -28,6 +33,9 @@ func LoadConfig() Config {
 		},
 		HTTP: HTTPConfig{
 			Port: getEnvAsInt("HTTP_PORT", 8080),
+		},
+		CORS: CORSConfig{
+			AllowedOrigins: getEnv("CORS_ALLOWED_ORIGINS", "*"),
 		},
 	}
 }
