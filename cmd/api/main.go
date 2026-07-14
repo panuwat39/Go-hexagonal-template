@@ -7,25 +7,33 @@ import (
 	"syscall"
 
 	"github.com/gofiber/fiber/v3"
+
+	"github.com/panuwat39/go-hexagonal-template/internal/bootstrap"
+	usermodule "github.com/panuwat39/go-hexagonal-template/internal/modules/user"
 )
 
 func main() {
+	cfg := bootstrap.LoadConfig()
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
 	app := fiber.New(fiber.Config{
-		AppName: "go-hexagonal-template",
+		AppName: cfg.App.Name,
 	})
 
 	app.Get("/health", func(c fiber.Ctx) error {
 		return c.JSON(fiber.Map{
 			"status": "ok",
+			"env":    cfg.App.Env,
 		})
 	})
 
-	go func() {
-		logger.Info("http server started", "addr", ":8080")
+	userModule := usermodule.NewModule()
+	userModule.RegisterRoutes(app)
 
-		if err := app.Listen(":8080"); err != nil {
+	go func() {
+		logger.Info("http server started", "addr", cfg.HTTPAddress())
+
+		if err := app.Listen(cfg.HTTPAddress()); err != nil {
 			logger.Error("http server failed", "error", err)
 			os.Exit(1)
 		}
