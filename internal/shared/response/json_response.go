@@ -11,6 +11,7 @@ import (
 type ErrorResponse struct {
 	Code    string `json:"code"`
 	Message string `json:"message"`
+	Details any    `json:"details,omitempty"`
 }
 
 func JSON(c fiber.Ctx, statusCode int, body any) error {
@@ -36,6 +37,7 @@ func Error(c fiber.Ctx, err error) error {
 		return JSON(c, statusFromCode(appErr.Code()), ErrorResponse{
 			Code:    string(appErr.Code()),
 			Message: appErr.Message(),
+			Details: appErr.Details(),
 		})
 	}
 
