@@ -51,3 +51,18 @@ init-project:
 
 clean:
 	rm -rf bin
+
+docker-build:
+	docker build -t go-hexagonal-template:local .
+
+docker-up:
+	docker compose up --build
+
+docker-up-detached:
+	docker compose up --build -d
+
+docker-down:
+	docker compose down
+
+docker-logs:
+	docker compose logs -f api
